@@ -1,35 +1,14 @@
-name: Build and Deploy
+name: Build
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-      
-      - name: Install dependencies
-        run: npm install
-      
-      - name: Debug - List files before build
-        run: ls -la
-      
-      - name: Build
-        run: npm run build 2>&1 || true
-      
-      - name: Debug - List files after build
-        run: ls -la && find . -type d -name "dist" 2>/dev/null || echo "No dist folder found"
-      
-      - name: Upload artifact
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-output
-          path: .
+      - run: npm install
+      - run: npm run build
