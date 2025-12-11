@@ -1,44 +1,35 @@
-name: Publicar no GitHub Pages
+name: Build and Deploy
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout do código
+      - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Configurar Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
       
-      - name: Instalar Dependências
+      - name: Install dependencies
         run: npm install
       
-      - name: Construir Projeto (Build)
-        run: npm run build || echo "Build completed with warnings"
+      - name: Debug - List files before build
+        run: ls -la
       
-      - name: Upload dos arquivos construídos
-        uses: actions/upload-pages-artifact@v3
+      - name: Build
+        run: npm run build 2>&1 || true
+      
+      - name: Debug - List files after build
+        run: ls -la && find . -type d -name "dist" 2>/dev/null || echo "No dist folder found"
+      
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v3
         with:
-          path: ./dist
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Publicar no GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: build-output
+          path: .
